@@ -62,7 +62,6 @@ public struct LuminareSlider<Label, Content, V, F>: View
     @State private var isSliderHovering: Bool = false
     @State private var isSliderDebouncedHovering: Bool = false
     @State private var isSliderEditing: Bool = false
-    @State private var shouldSkipNextSliderHaptic: Bool = false
     @State private var composeWidth: CGFloat = .zero
 
     private let id: UUID = .init()
@@ -333,15 +332,11 @@ public struct LuminareSlider<Label, Content, V, F>: View
         let binding = Binding<V> {
             value
         } set: { newValue in
+            let didChange = newValue != value
             value = newValue
             isTextBoxVisible = false
-            
-            if step != nil {
-                if shouldSkipNextSliderHaptic {
-                    shouldSkipNextSliderHaptic = false
-                    return
-                }
 
+            if step != nil, didChange {
                 NSHapticFeedbackManager.defaultPerformer.perform(
                     .alignment,
                     performanceTime: .drawCompleted
@@ -450,7 +445,6 @@ public struct LuminareSlider<Label, Content, V, F>: View
 
     private func handleEditingChanged(_ isEditing: Bool) {
         isSliderEditing = isEditing
-        shouldSkipNextSliderHaptic = isEditing
         onEditingChanged(isEditing)
 
         if !isEditing {

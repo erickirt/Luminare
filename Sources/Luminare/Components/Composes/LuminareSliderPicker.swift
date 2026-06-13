@@ -50,7 +50,6 @@ public struct LuminareSliderPicker<Label, Content, V>: View where Label: View, C
     @State private var isSliderHovering: Bool = false
     @State private var isSliderDebouncedHovering: Bool = false
     @State private var isSliderEditing: Bool = false
-    @State private var shouldSkipNextSliderHaptic: Bool = false
     @State private var composeWidth: CGFloat = .zero
 
     // MARK: Initializers
@@ -363,12 +362,11 @@ public struct LuminareSliderPicker<Label, Content, V>: View where Label: View, C
                     Double(options.firstIndex(where: { $0 == selection }) ?? 0)
                 },
                 set: { newIndex in
-                    selection = options[Int(newIndex)]
+                    let newSelection = options[Int(newIndex)]
+                    let didChange = newSelection != selection
+                    selection = newSelection
 
-                    if shouldSkipNextSliderHaptic {
-                        shouldSkipNextSliderHaptic = false
-                        return
-                    }
+                    guard didChange else { return }
 
                     NSHapticFeedbackManager.defaultPerformer.perform(
                         .alignment,
@@ -403,7 +401,6 @@ public struct LuminareSliderPicker<Label, Content, V>: View where Label: View, C
 
     private func handleEditingChanged(_ isEditing: Bool) {
         isSliderEditing = isEditing
-        shouldSkipNextSliderHaptic = isEditing
         onEditingChanged(isEditing)
 
         if !isEditing {
