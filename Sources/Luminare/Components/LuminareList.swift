@@ -125,9 +125,9 @@ public struct LuminareList<ContentA, ContentB, V, ID>: View
                     tableView.selectionHighlightStyle = .none
                 }
                 .luminareSectionDisableInnerPadding(true)
+                .frame(height: fixedHeight.map { min(totalHeight, $0) }, alignment: .top)
             }
         }
-        .frame(height: fixedHeight.map { min(totalHeight, $0) }, alignment: .top)
         .animation(animation, value: items)
         .onChange(of: luminareClickedOutside) { _ in
             setSelection([])
