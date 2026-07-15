@@ -87,7 +87,8 @@ public struct LuminarePane<Header, Content>: View where Header: View, Content: V
         header()
             .luminareCornerRadius(8)
             .luminareMinHeight(26)
-            .padding(.horizontal, 12)
+            .padding(.leading, 12) // TODO: expose pref keys to ignore leading/trailing padding
+            .padding(.trailing, 8)
             .frame(height: titleBarHeight, alignment: .leading)
     }
 }
