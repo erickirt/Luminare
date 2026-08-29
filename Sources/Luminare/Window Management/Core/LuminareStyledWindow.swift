@@ -16,9 +16,10 @@ open class LuminareStyledWindow: NSWindow {
         standardWindowButton(type)
     }
 
-    private lazy var trafficLightButtonSizes: [NSButton: NSSize] = trafficLightButtons.reduce(into: [:]) { sizes, button in
-        sizes[button] = button.frame.size
-    }
+    private lazy var trafficLightButtonMetrics: [NSButton: (size: NSSize, intrinsic: NSSize)] = trafficLightButtons
+        .reduce(into: [:]) { metrics, button in
+            metrics[button] = (button.frame.size, button.intrinsicContentSize)
+        }
 
     private var trafficLightButtonConstraints: [NSLayoutConstraint] = []
     private weak var constrainedContentView: NSView?
@@ -79,6 +80,10 @@ open class LuminareStyledWindow: NSWindow {
         trafficLightButtonConstraints.removeAll()
         constrainedContentView = contentView
 
+        // Opting a button out of autoresizing below replaces its frame, so the
+        // native geometry has to be captured while every button is still untouched
+        let metrics = trafficLightButtonMetrics
+
         let nativeButtonAreaWidth = (trafficLightButtons.last?.frame.minX ?? 0) - (trafficLightButtons.first?.frame.minX ?? 0)
         let buttonSpacing = titleBarButtonConfiguration.spacing > 0
             ? titleBarButtonConfiguration.spacing
@@ -100,7 +105,14 @@ open class LuminareStyledWindow: NSWindow {
             }
 
             button.translatesAutoresizingMaskIntoConstraints = false
-            let buttonSize = trafficLightButtonSizes[button] ?? button.frame.size
+
+            let native = metrics[button]
+            let buttonSize: NSSize = if let native, native.intrinsic.width > 0, native.intrinsic.height > 0 {
+                native.intrinsic
+            } else {
+                native?.size ?? button.frame.size
+            }
+
             trafficLightButtonConstraints.append(contentsOf: [
                 button.topAnchor.constraint(equalTo: contentView.topAnchor, constant: titleBarButtonConfiguration.padding),
                 button.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: xPosition),
