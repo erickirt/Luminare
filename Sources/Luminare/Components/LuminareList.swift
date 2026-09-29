@@ -138,7 +138,9 @@ public struct LuminareList<ContentA, ContentB, V, ID>: View
                 return
             }
 
-            setSelection(internalSelection.intersection(items))
+            // Matched by ID, so editing a selected item keeps it selected
+            let selectedIDs = Set(internalSelection.map { $0[keyPath: keyPath] })
+            setSelection(Set(items.filter { selectedIDs.contains($0[keyPath: keyPath]) }))
         }
         .onChange(of: selection) { newValue in
             guard internalSelection != newValue else { return }
